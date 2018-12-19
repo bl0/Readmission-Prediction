@@ -26,10 +26,12 @@ data = pd.read_csv('./data/processed.csv')
 label = data.readmitted.as_matrix()
 data = data.drop(columns=['Unnamed: 0', 'readmitted']).as_matrix()
 
+random_state = 2
+
 train_data, test_data, train_label, test_label = train_test_split(
-    data, label, test_size=0.2, random_state=0
+    data, label, test_size=0.2, random_state=random_state
 )
-train_data, train_label = SMOTE(random_state=0).fit_sample(train_data, train_label)
+train_data, train_label = SMOTE(random_state=random_state).fit_sample(train_data, train_label)
 
 train_data = mx.nd.array(train_data)
 train_label = mx.nd.array(train_label)
@@ -122,9 +124,10 @@ class F1Metric(mx.metric.EvalMetric):
 
 base_lr = 0.1
 lr_factor = 10
-lr_step = '10, 13'
+lr_step = '3, 4'
 lr_epoch = [float(epoch) for epoch in lr_step.split(',')]
 begin_epoch = 0
+end_epoch = 5
 lr_epoch_diff = [epoch - begin_epoch for epoch in lr_epoch if epoch > begin_epoch]
 lr = base_lr * (lr_factor ** (len(lr_epoch) - len(lr_epoch_diff)))
 lr_iters = [int(epoch * len(train_data) / batch_size) for epoch in lr_epoch_diff]
@@ -146,10 +149,17 @@ Model.fit(
     },
     eval_metric='acc',
     batch_end_callback=mx.callback.Speedometer(batch_size, 10),
-    num_epoch=15
+    num_epoch=end_epoch
 )
 
 Prob = Model.predict(test_iter).asnumpy()
 Prob = Prob.argmax(axis=1)
 print(Prob.shape)
-print(f1_score(test_label.asnumpy(), Prob, average='macro'))
+print('F1 Score -> %.6f'%(f1_score(test_label.asnumpy(), Prob, average='macro')))
+
+# Random-State
+# [0] : 0.376988
+# [1] : 0.388603
+# [2] : 0.381658
+# [3] : 0.383682
+# [4] : 0.376800

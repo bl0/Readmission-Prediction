@@ -26,10 +26,10 @@ data = pd.read_csv('./data/processed.csv')
 label = data.readmitted.as_matrix()
 data = data.drop(columns=['Unnamed: 0', 'readmitted']).as_matrix()
 
-random_state = 2
+random_state = 0
 
 train_data, test_data, train_label, test_label = train_test_split(
-    data, label, test_size=0.1, random_state=random_state
+    data, label, test_size=0.2, random_state=random_state
 )
 train_data, train_label = SMOTE(random_state=random_state).fit_sample(train_data, train_label)
 
@@ -211,8 +211,14 @@ Model.fit(
 
 Prob = Model.predict(test_iter).asnumpy()
 Prob = Prob.argmax(axis=1)
-print(Prob.shape)
-print('F1 Score -> %.6f'%(f1_score(test_label.asnumpy(), Prob, average='macro')))
+test_label = test_label.asnumpy()
+# print(Prob.shape)
+# print('F1 Score -> %.6f'%(f1_score(test_label.asnumpy(), Prob, average='macro')))
+
+from sklearn.metrics import classification_report
+
+print(classification_report(y_true=test_label, y_pred=Prob, digits=4))
+print(classification_report(y_true=Prob, y_pred=test_label, digits=4))
 
 # Random-State
 # [0] : 0.376988

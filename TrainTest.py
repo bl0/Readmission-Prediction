@@ -57,7 +57,7 @@ def TrainLoop(train_iter, test_iter, test_label):
         optimizer='sgd',
         optimizer_params={
             'learning_rate': base_lr,
-            'wd': 0.0001,
+            # 'wd': 0.0001,
             'lr_scheduler': lr_scheduler
         },
         eval_metric='acc',
